@@ -51,6 +51,8 @@ func (t *Tokenizer) NextToken() Token {
 		tokType = TokenInteger
 	}
 
+	// @Bug: If there is no space between digits and plus it'll be combined
+	// into a TokenSymbol.
 	if c == rune('+') {
 		value = append(value, c)
 		c = t.NextChar()
