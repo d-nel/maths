@@ -7,15 +7,15 @@ import (
 type TokenType uint16
 
 const (
-	TokenInteger TokenType = iota
+	TokenNumber TokenType = iota
 	TokenSymbol
 	TokenNil
 )
 
 func (tokType TokenType) String() string {
 	switch tokType {
-	case TokenInteger:
-		return "int"
+	case TokenNumber:
+		return "number"
 	case TokenSymbol:
 		return "symbol"
 	default:
@@ -46,7 +46,7 @@ func (t *Tokenizer) readNumber() Token {
 		c = t.nextChar()
 	}
 
-	return Token{TokenInteger, t.popBuffer()}
+	return Token{TokenNumber, t.popBuffer()}
 }
 
 func (t *Tokenizer) NextToken() Token {
@@ -62,7 +62,7 @@ func (t *Tokenizer) NextToken() Token {
 		t.storeChar()
 		t.nextChar()
 		return Token{TokenSymbol, t.popBuffer()}
-	case '-': // , '.'
+	case '-', '.':
 		t.storeChar()
 		c = t.nextChar()
 		if unicode.IsDigit(c) {
