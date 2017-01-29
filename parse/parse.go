@@ -40,7 +40,6 @@ func NewTokenizer(source string) *Tokenizer {
 }
 
 func (t *Tokenizer) readNumber() Token {
-	t.storeChar()
 	c := t.currentChar()
 	for unicode.IsDigit(c) {
 		t.storeChar()
@@ -51,9 +50,6 @@ func (t *Tokenizer) readNumber() Token {
 }
 
 func (t *Tokenizer) NextToken() Token {
-//	var value []rune
-//	tokType := TokenNil
-
 	t.skipSpace()
 	c := t.currentChar()
 
@@ -61,12 +57,20 @@ func (t *Tokenizer) NextToken() Token {
 		return t.readNumber()
 	}
 
-	if c == rune('+') {
+	switch c {
+	case '+', '*', '/', '(', ')':
 		t.storeChar()
 		t.nextChar()
 		return Token{TokenSymbol, t.popBuffer()}
-	}
+	case '-': // , '.'
+		t.storeChar()
+		c = t.nextChar()
+		if unicode.IsDigit(c) {
+			return t.readNumber()
+		}
 
+		return Token{TokenSymbol, t.popBuffer()}
+	}
 
 	// @TODO: Better handling of unknown chars
 	return Token{TokenNil, "error"}
