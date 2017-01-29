@@ -30,51 +30,71 @@ type Token struct {
 
 type Tokenizer struct {
 	source []rune
+	buffer []rune
 	index  int
 	tok    Token
 }
 
 func NewTokenizer(source string) *Tokenizer {
-	return &Tokenizer{[]rune(source), 0, Token{}}
+	return &Tokenizer{[]rune(source), []rune(""), 0, Token{}}
+}
+
+func (t *Tokenizer) readNumber() Token {
+	t.storeChar()
+	c := t.currentChar()
+	for unicode.IsDigit(c) {
+		t.storeChar()
+		c = t.nextChar()
+	}
+
+	return Token{TokenInteger, t.popBuffer()}
 }
 
 func (t *Tokenizer) NextToken() Token {
-	var value []rune
-	tokType := TokenNil
+//	var value []rune
+//	tokType := TokenNil
 
-	t.SkipSpace()
-	c := t.CurrentChar()
+	t.skipSpace()
+	c := t.currentChar()
 
-	for unicode.IsDigit(c) {
-		value = append(value, c)
-		c = t.NextChar()
-		tokType = TokenInteger
+	if unicode.IsDigit(c) {
+		return t.readNumber()
 	}
 
-	// @Bug: If there is no space between digits and plus it'll be combined
-	// into a TokenSymbol.
 	if c == rune('+') {
-		value = append(value, c)
-		c = t.NextChar()
-		tokType = TokenSymbol
+		t.storeChar()
+		t.nextChar()
+		return Token{TokenSymbol, t.popBuffer()}
 	}
 
-	return Token{tokType, string(value)}
+
+	// @TODO: Better handling of unknown chars
+	return Token{TokenNil, "error"}
 }
 
-func (t *Tokenizer) SkipSpace() {
-	c := t.CurrentChar()
+func (t *Tokenizer) skipSpace() {
+	c := t.currentChar()
 	for unicode.IsSpace(c) {
-		c = t.NextChar()
+		c = t.nextChar()
 	}
 }
 
-func (t *Tokenizer) NextChar() rune {
-	t.index += 1
-	return t.CurrentChar()
+func (t *Tokenizer) storeChar() {
+	t.buffer = append(t.buffer, t.currentChar())
 }
 
-func (t *Tokenizer) CurrentChar() rune {
+func (t *Tokenizer) popBuffer() string {
+	buff := string(t.buffer)
+	t.buffer = []rune("")
+	return buff
+}
+
+func (t *Tokenizer) nextChar() rune {
+	t.index += 1
+	return t.currentChar()
+}
+
+func (t *Tokenizer) currentChar() rune {
 	if t.index < len(t.source) {
 		return t.source[t.index]
 	}
