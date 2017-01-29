@@ -1,17 +1,27 @@
-package main
+package parse
 
 import (
-	"fmt"
 	"unicode"
 )
 
 type TokenType uint16
 
 const (
- 	TokenInteger TokenType = iota
+	TokenInteger TokenType = iota
 	TokenSymbol
 	TokenNil
 )
+
+func (tokType TokenType) String() string {
+	switch tokType {
+	case TokenInteger:
+		return "int"
+	case TokenSymbol:
+		return "symbol"
+	default:
+		return "unknown"
+	}
+}
 
 type Token struct {
 	Type  TokenType
@@ -22,6 +32,10 @@ type Tokenizer struct {
 	source []rune
 	index  int
 	tok    Token
+}
+
+func NewTokenizer(source string) *Tokenizer {
+	return &Tokenizer{[]rune(source), 0, Token{}}
 }
 
 func (t *Tokenizer) NextToken() Token {
@@ -63,28 +77,5 @@ func (t *Tokenizer) CurrentChar() rune {
 		return t.source[t.index]
 	}
 
-	return rune('F') // TODO: return blank rune
-}
-
-
-func main() {
-	tok := Token{TokenInteger, "11"}
-	fmt.Println(tok)
-
-	t := Tokenizer{[]rune("1110 + 12"), 0, tok}
-	fmt.Println(t.NextToken())
-	fmt.Println(t.NextToken())
-	fmt.Println(t.NextToken())
-}
-
-
-func (tokType TokenType) String() string {
-	switch tokType {
-	case TokenInteger:
-		return "int"
-	case TokenSymbol:
-		return "symbol"
-	default:
-		return "unknown"
-	}
+	return rune(0)
 }
