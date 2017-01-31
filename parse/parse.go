@@ -39,9 +39,12 @@ func NewTokenizer(source string) *Tokenizer {
 	return &Tokenizer{[]rune(source), []rune(""), 0, Token{}}
 }
 
-func (t *Tokenizer) readNumber() Token {
+func (t *Tokenizer) readNumber(hasPoint bool) Token {
 	c := t.currentChar()
-	for unicode.IsDigit(c) {
+
+	for unicode.IsDigit(c) || (!hasPoint && c == '.') {
+		hasPoint = hasPoint || c == '.'
+
 		t.storeChar()
 		c = t.nextChar()
 	}
@@ -54,7 +57,7 @@ func (t *Tokenizer) NextToken() Token {
 	c := t.currentChar()
 
 	if unicode.IsDigit(c) {
-		return t.readNumber()
+		return t.readNumber(false)
 	}
 
 	switch c {
@@ -66,7 +69,8 @@ func (t *Tokenizer) NextToken() Token {
 		t.storeChar()
 		c = t.nextChar()
 		if unicode.IsDigit(c) {
-			return t.readNumber()
+			// @Incomplete: hasPoint is set for both '.' and '-'
+			return t.readNumber(true)
 		}
 
 		return Token{TokenSymbol, t.popBuffer()}
