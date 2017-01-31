@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	t := parse.NewTokenizer("-5(12 + 0.34)")
+	t := parse.NewTokenizer("-5(12 + 0.34) + 52 - .2")
 
 	tok := t.NextToken()
 	for tok.Type != parse.TokenNil {

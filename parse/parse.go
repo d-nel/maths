@@ -66,11 +66,11 @@ func (t *Tokenizer) NextToken() Token {
 		t.nextChar()
 		return Token{TokenSymbol, t.popBuffer()}
 	case '-', '.':
+		hasPoint := c == '.'
 		t.storeChar()
 		c = t.nextChar()
 		if unicode.IsDigit(c) {
-			// @Incomplete: hasPoint is set for both '.' and '-'
-			return t.readNumber(true)
+			return t.readNumber(hasPoint)
 		}
 
 		return Token{TokenSymbol, t.popBuffer()}
