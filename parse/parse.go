@@ -35,6 +35,10 @@ type Tokenizer struct {
 	tok    Token
 }
 
+type Parser struct {
+	toknr *Tokenizer
+}
+
 func NewTokenizer(source string) *Tokenizer {
 	return &Tokenizer{[]rune(source), []rune(""), 0, Token{}}
 }
@@ -49,7 +53,8 @@ func (t *Tokenizer) readNumber(hasPoint bool) Token {
 		c = t.nextChar()
 	}
 
-	return Token{TokenNumber, t.popBuffer()}
+	t.tok = Token{TokenNumber, t.popBuffer()}
+	return t.tok
 }
 
 func (t *Tokenizer) NextToken() Token {
@@ -64,7 +69,8 @@ func (t *Tokenizer) NextToken() Token {
 	case '+', '*', '/', '(', ')':
 		t.storeChar()
 		t.nextChar()
-		return Token{TokenSymbol, t.popBuffer()}
+		t.tok = Token{TokenSymbol, t.popBuffer()}
+		return t.tok
 	case '-', '.':
 		hasPoint := c == '.'
 		t.storeChar()
@@ -73,7 +79,8 @@ func (t *Tokenizer) NextToken() Token {
 			return t.readNumber(hasPoint)
 		}
 
-		return Token{TokenSymbol, t.popBuffer()}
+		t.tok = Token{TokenSymbol, t.popBuffer()}
+		return t.tok
 	}
 
 	// @TODO: Better handling of unknown chars
@@ -108,4 +115,26 @@ func (t *Tokenizer) currentChar() rune {
 	}
 
 	return rune(0)
+}
+
+func (p *Parser) NextNode() Node {
+	lhs := p.Expr()
+
+	if p.toknr.tok.Type == TokenSymbol && p.toknr.tok.Value == "*" {
+		rhs := p.Expr()
+		return &NodeMulti{lhs, rhs}
+	}
+
+	return &NodeMulti{}
+}
+
+func (p *Parser) Expr() Node {
+	tok := p.toknr.NextToken()
+
+	if tok.Type == TokenNumber {
+		p.toknr.NextToken()
+		return &NodeNumberLit{tok.Value}
+	}
+
+	return &NodeNumberLit{"-1"}
 }
